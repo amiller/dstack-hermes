@@ -20,6 +20,7 @@ services:
       - proxy_sockets:/var/run/proxy
       - hermes_data:/root/.hermes
       - claude_data:/root/.claude
+      - smithers_data:/home/smithers
     environment:
       - DOCKER_HOST=unix:///var/run/proxy/docker.sock
       - HERMES_MODEL=${HERMES_MODEL}
@@ -44,4 +45,5 @@ services:
 volumes:
   hermes_data:
   claude_data:
+  smithers_data:
   proxy_sockets:
