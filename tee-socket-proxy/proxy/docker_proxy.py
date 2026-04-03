@@ -21,6 +21,11 @@ OPEN_ROUTES = [
     ("GET",  re.compile(r"^(/v[\d.]+)?/version$")),
     ("GET",  re.compile(r"^(/v[\d.]+)?/images/json$")),
     ("POST", re.compile(r"^(/v[\d.]+)?/images/create$")),
+    ("GET",  re.compile(r"^(/v[\d.]+)?/info$")),
+]
+
+STREAM_OPEN_ROUTES = [
+    ("GET",  re.compile(r"^(/v[\d.]+)?/events$")),
 ]
 
 TRACKED_ROUTES = [
@@ -83,6 +88,10 @@ class DockerProxy:
         for m, pat in OPEN_ROUTES:
             if method == m and pat.match(request.path):
                 return await self._forward(method, path, request)
+
+        for m, pat in STREAM_OPEN_ROUTES:
+            if method == m and pat.match(request.path):
+                return await self._forward(method, path, request, stream=True)
 
         if method == "POST" and CREATE_RE.match(request.path):
             return await self._handle_create(path, request)

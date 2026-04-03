@@ -6,14 +6,14 @@
 #   Then: docker exec -it dstack-hermes-1 bash
 services:
   tee-socket-proxy:
-    image: ghcr.io/amiller/tee-socket-proxy@sha256:eaac15f1165189cb398061a48267b8c8706483c9fec24e4a37fcc84d74bff9bb
+    image: ghcr.io/amiller/tee-socket-proxy@sha256:a9c0a75643bdf0f3c951d853ea4f4adcf15c908c5cb390b2ad7edd79abe36807
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/run/dstack.sock:/var/run/dstack.sock:ro
       - proxy_sockets:/var/run/proxy
 
   hermes:
-    image: ghcr.io/amiller/hermes-tee@sha256:ede86ef63ef42b654364f1870d2078acdb270e178c1d412e0adbd6b6456ab840
+    image: ghcr.io/amiller/hermes-tee@sha256:59d20bfff9d5c839d8b9fa58c37fab2169baef86bc59029b853c54ecbac2d8c5
     ports:
       - "8080:8080"
     volumes:

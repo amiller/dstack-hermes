@@ -4,6 +4,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl ca-certificates ripgrep ffmpeg gcc python3-dev libffi-dev && \
     rm -rf /var/lib/apt/lists/*
 
+# Docker CLI only (no daemon)
+RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-27.5.1.tgz | \
+    tar xz --strip-components=1 -C /usr/local/bin docker/docker
+
 # Install Node.js 22
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs && \
