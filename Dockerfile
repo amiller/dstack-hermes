@@ -34,6 +34,7 @@ RUN mkdir -p $HERMES_HOME && \
     cp cli-config.yaml.example $HERMES_HOME/config.yaml && \
     cp .env.example $HERMES_HOME/.env
 
+COPY skills/ /opt/hermes-agent/skills/
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
