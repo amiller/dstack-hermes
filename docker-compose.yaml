@@ -1,0 +1,8 @@
+services:
+  hermes:
+    build: .
+    volumes:
+      - /data/hermes:/root/.hermes
+    environment:
+      - ANTHROPIC_TOKEN=${ANTHROPIC_TOKEN}
+      - HERMES_MODEL=anthropic/claude-sonnet-4-20250514

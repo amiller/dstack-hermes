@@ -1,0 +1,47 @@
+# Staging compose with TEE socket proxy + SSH sidecar
+# Deploy/update:
+#   phala deploy --cvm-id hermes-staging -c docker-compose.staging.yaml -e deploy-notes/.env.staging
+# SSH in:
+#   phala ssh hermes-staging -- -i deploy-notes/deploy_key -p 2222
+#   Then: docker exec -it dstack-hermes-1 bash
+services:
+  tee-socket-proxy:
+    image: ghcr.io/amiller/tee-socket-proxy@sha256:eaac15f1165189cb398061a48267b8c8706483c9fec24e4a37fcc84d74bff9bb
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/dstack.sock:/var/run/dstack.sock:ro
+      - proxy_sockets:/var/run/proxy
+
+  hermes:
+    image: ghcr.io/amiller/hermes-tee@sha256:ede86ef63ef42b654364f1870d2078acdb270e178c1d412e0adbd6b6456ab840
+    ports:
+      - "8080:8080"
+    volumes:
+      - proxy_sockets:/var/run/proxy
+      - hermes_data:/root/.hermes
+      - claude_data:/root/.claude
+    environment:
+      - DOCKER_HOST=unix:///var/run/proxy/docker.sock
+      - HERMES_MODEL=${HERMES_MODEL}
+      - ZAI_API_KEY=${ZAI_API_KEY}
+      - GLM_BASE_URL=${GLM_BASE_URL}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - GATEWAY_ALLOW_ALL_USERS=false
+    depends_on:
+      - tee-socket-proxy
+
+  ssh-debug:
+    image: ghcr.io/amiller/dstack-ssh-sidecar:latest
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    environment:
+      - SSH_PUBKEY=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAq0LNzDVBcj6PIY2UP4LOCRJSvbw9cfX8GLSKqUoUmd hermes-tee-staging
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/dstack.sock:/var/run/dstack.sock
+
+volumes:
+  hermes_data:
+  claude_data:
+  proxy_sockets:

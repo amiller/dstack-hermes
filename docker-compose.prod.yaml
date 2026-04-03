@@ -1,0 +1,12 @@
+# Deploy: phala deploy -c docker-compose.prod.yaml --kms base --private-key "$PRIVATE_KEY"
+services:
+  hermes:
+    image: ghcr.io/amiller/hermes-tee@sha256:REPLACE_ME
+    volumes:
+      - /var/run/dstack.sock:/var/run/dstack.sock
+      - hermes_data:/root/.hermes
+    environment:
+      - ANTHROPIC_TOKEN=${ANTHROPIC_TOKEN}
+      - HERMES_MODEL=${HERMES_MODEL}
+volumes:
+  hermes_data:

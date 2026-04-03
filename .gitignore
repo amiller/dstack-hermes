@@ -1,0 +1,12 @@
+deploy-notes/
+__pycache__/
+.claude/
+
+# Legacy proxy scripts (pre-ZAI migration)
+anthropic_proxy.py
+claude_proxy.py
+claude_tmux_proxy.py
+pi_proxy.mjs
+patch_billing_header.py
+package.json
+package-lock.json
