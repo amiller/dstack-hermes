@@ -1,0 +1,9 @@
+node_modules/
+package-lock.json
+*.db
+*.db-shm
+*.db-wal
+alice.state.json
+bob.state.json
+bob_keys_ready
+room_id.txt
