@@ -1,0 +1,16 @@
+FROM node:20-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc python3-dev python3 libffi-dev libolm3 libolm-dev curl && \
+    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y python3-pip python3-venv && \
+    python3 -m venv /venv && /venv/bin/pip install --no-cache-dir \
+      'mautrix[encryption]==0.21.0' asyncpg python-olm aiosqlite && \
+    rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY package.json /app/package.json
+RUN npm install --no-audit --no-fund
+COPY element_user.mjs /app/element_user.mjs
+COPY bot.py /app/bot.py
+COPY runner.sh /app/runner.sh
+RUN chmod +x /app/runner.sh
+CMD ["/app/runner.sh"]

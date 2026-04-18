@@ -1,0 +1,23 @@
+services:
+  continuwuity:
+    image: ghcr.io/continuwuity/continuwuity:latest
+    ports:
+      - "127.0.0.1:16167:6167"
+    volumes:
+      - ./continuwuity.toml:/etc/conduwuit.toml:ro
+      - continuwuity-data:/var/lib/conduwuit
+    environment:
+      CONDUWUIT_CONFIG: /etc/conduwuit.toml
+
+  repro:
+    build:
+      context: .
+      dockerfile: Dockerfile.repro
+    network_mode: host
+    environment:
+      HOMESERVER: http://127.0.0.1:16167
+      BOOTSTRAP_TOKEN: ${BOOTSTRAP_TOKEN:-}
+    profiles: [repro]
+
+volumes:
+  continuwuity-data:

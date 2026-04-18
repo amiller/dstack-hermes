@@ -1,0 +1,10 @@
+[global]
+server_name = "localhost:6167"
+database_backend = "rocksdb"
+database_path = "/var/lib/conduwuit"
+address = "0.0.0.0"
+port = 6167
+allow_registration = true
+registration_token = "repro-token"
+allow_federation = false
+log = "warn"
