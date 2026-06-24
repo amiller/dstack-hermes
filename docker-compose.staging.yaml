@@ -6,7 +6,7 @@
 #   Then: docker exec -it dstack-hermes-1 bash
 services:
   tee-daemon:
-    image: ghcr.io/amiller/tee-socket-proxy@sha256:80d00123dd15bb6490ec41be9dada82d4cdfcf0333afb78bfc8f82c8298adda5
+    image: ghcr.io/amiller/tee-socket-proxy@sha256:25ef2ee2ea2dd1e5373aa6fc3dbaa9ed179704715068b0be224e41ef98de4cdd
     ports:
       - "8080:8080"
     volumes:
@@ -14,24 +14,56 @@ services:
       - /var/run/dstack.sock:/var/run/dstack.sock:ro
       - proxy_sockets:/var/run/proxy
       - daemon_data:/var/lib/tee-daemon
+      - project_data:/var/lib/tee-daemon-data
     environment:
       - TEE_DAEMON_TOKEN=${TEE_DAEMON_TOKEN}
       - DAEMON_VOLUME_NAME=dstack_daemon_data
       - DAEMON_VOLUME_MOUNT=/var/lib/tee-daemon
+      - DAEMON_DATA_VOLUME_NAME=dstack_project_data
+      - DAEMON_CONTAINER_RUNTIME=runsc
 
   hermes:
-    image: ghcr.io/amiller/hermes-tee@sha256:59d20bfff9d5c839d8b9fa58c37fab2169baef86bc59029b853c54ecbac2d8c5
+    image: ghcr.io/amiller/hermes-tee@sha256:25ba813e07f208e05645fc4c7850410240ed8a60bbd9517b34b859b938eaa2d1
+    # NOTE: hermes intentionally stays on the default OCI runtime (runc).
+    # gVisor's sandbox network stack does not reach Docker's embedded DNS at
+    # 127.0.0.11 (used on user-defined bridges like dstack_default), and
+    # Docker forces 127.0.0.11 into /etc/resolv.conf on user-defined bridges
+    # regardless of HostConfig.Dns. For staging/dev hermes is documented as
+    # outside the substrate's "design under test" boundary; the DAEMON's
+    # tenants run under runsc, which is what the substrate-isolation claim
+    # rests on.
+    restart: unless-stopped
+    # Persistence: most writable paths are volumes so agent-installed state
+    # survives container recreation. Can't mount / directly (Docker blocks
+    # shadowing rootfs), but these cover everywhere real state lands.
     volumes:
       - proxy_sockets:/var/run/proxy
+      - root_home:/root
       - hermes_data:/root/.hermes
       - claude_data:/root/.claude
       - smithers_data:/home/smithers
+      - opt_data:/opt
+      - hermes_install:/opt/hermes-agent
+      - usr_local:/usr/local
+      - var_lib:/var/lib
+      - etc_data:/etc
+      - home_data:/home
     environment:
       - DOCKER_HOST=unix:///var/run/proxy/docker.sock
       - HERMES_MODEL=${HERMES_MODEL}
       - ZAI_API_KEY=${ZAI_API_KEY}
       - GLM_BASE_URL=${GLM_BASE_URL}
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      # - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - MATRIX_HOMESERVER=${MATRIX_HOMESERVER}
+      - MATRIX_ACCESS_TOKEN=${MATRIX_ACCESS_TOKEN}
+      - MATRIX_USER_ID=${MATRIX_USER_ID}
+      - MATRIX_ALLOWED_USERS=${MATRIX_ALLOWED_USERS}
+      - MATRIX_ENCRYPTION=${MATRIX_ENCRYPTION}
+      - MATRIX_REQUIRE_ENCRYPTION=${MATRIX_REQUIRE_ENCRYPTION}
+      - MATRIX_DEVICE_ID=${MATRIX_DEVICE_ID}
+      - MATRIX_RECOVERY_KEY=${MATRIX_RECOVERY_KEY}
+      - MATRIX_REQUIRE_MENTION=${MATRIX_REQUIRE_MENTION}
+      - MATRIX_FREE_RESPONSE_ROOMS=${MATRIX_FREE_RESPONSE_ROOMS}
       - GATEWAY_ALLOW_ALL_USERS=false
       - TEE_DAEMON_TOKEN=${TEE_DAEMON_TOKEN}
     depends_on:
@@ -53,4 +85,12 @@ volumes:
   claude_data:
   smithers_data:
   daemon_data:
+  project_data:
   proxy_sockets:
+  hermes_install:
+  usr_local:
+  root_home:
+  opt_data:
+  var_lib:
+  etc_data:
+  home_data:
